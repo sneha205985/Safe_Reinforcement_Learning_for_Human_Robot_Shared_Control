@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: safe-rl-config
+  namespace: safe-rl-production
+  labels:
+    app.kubernetes.io/name: safe-rl
+    app.kubernetes.io/component: config
+data:
+  # Application configuration
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "production"
+  MONITORING_ENABLED: "true"
+  METRICS_PORT: "9090"
+  
+  # Performance settings
+  WORKER_CONCURRENCY: "4"
+  MAX_WORKERS: "8"
+  BATCH_SIZE: "32"
+  MODEL_CACHE_SIZE: "1000"
+  
+  # Safety settings
+  SAFETY_CHECK_INTERVAL: "1"
+  MAX_SAFETY_VIOLATIONS: "0"
+  CONSTRAINT_TOLERANCE: "0.01"
+  EMERGENCY_STOP_ENABLED: "true"
+  
+  # Database settings
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "10"
+  DB_POOL_TIMEOUT: "30"
+  
+  # Redis settings
+  REDIS_MAX_CONNECTIONS: "50"
+  REDIS_TIMEOUT: "5"
+  
+  # Model registry settings
+  MODEL_REGISTRY_TIMEOUT: "30"
+  MODEL_CACHE_TTL: "3600"
+  
+  # API settings
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT: "30"
+  CORS_ORIGINS: "https://saferl.example.com"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: safe-rl-production
+data:
+  nginx.conf: |
+    upstream safe_rl_api {
+        least_conn;
+        server safe-rl-api:8000 max_fails=3 fail_timeout=30s;
+        server safe-rl-api:8000 backup;
+    }
+    
+    upstream policy_inference {
+        least_conn;
+        server policy-inference:8001 max_fails=3 fail_timeout=30s;
+    }
+    
+    server {
+        listen 80;
+        server_name saferl.example.com;
+        return 301 https://$server_name$request_uri;
+    }
+    
+    server {
+        listen 443 ssl http2;
+        server_name saferl.example.com;
+        
+        ssl_certificate /etc/nginx/ssl/cert.pem;
+        ssl_certificate_key /etc/nginx/ssl/key.pem;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384;
+        
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+        
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        limit_req zone=api burst=20 nodelay;
+        
+        # API endpoints
+        location /api/ {
+            proxy_pass http://safe_rl_api;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_timeout 30s;
+        }
+        
+        # High-throughput inference endpoint
+        location /inference/ {
+            proxy_pass http://policy_inference;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_timeout 10s;
+        }
+        
+        # Health check
+        location /health {
+            access_log off;
+            proxy_pass http://safe_rl_api/health;
+        }
+        
+        # Metrics (internal only)
+        location /metrics {
+            allow 10.0.0.0/8;
+            allow 172.16.0.0/12;
+            allow 192.168.0.0/16;
+            deny all;
+            proxy_pass http://safe_rl_api/metrics;
+        }
+    }

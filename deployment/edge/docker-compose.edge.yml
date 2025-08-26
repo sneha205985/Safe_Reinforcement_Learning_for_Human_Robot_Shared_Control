@@ -1,0 +1,280 @@
+version: '3.8'
+
+services:
+  # Edge-optimized Safe RL API
+  safe-rl-api:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+      target: production
+    image: safe-rl-api:edge
+    container_name: safe-rl-api-edge
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=edge
+      - MODEL_CACHE_SIZE=2GB
+      - INFERENCE_BATCH_SIZE=8
+      - GPU_MEMORY_LIMIT=4GB
+      - EDGE_MODE=true
+      - OFFLINE_MODE=true
+      - LOCAL_MODEL_REGISTRY=true
+    volumes:
+      - ./config/edge.yaml:/app/config/environment.yaml
+      - edge_models:/app/models
+      - edge_data:/app/data
+      - edge_logs:/app/logs
+    networks:
+      - edge-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Lightweight policy inference service
+  policy-inference:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.edge
+    image: policy-inference:edge
+    container_name: policy-inference-edge
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=edge
+      - MODEL_OPTIMIZATION=quantized
+      - INFERENCE_MODE=real_time
+      - CACHE_STRATEGY=aggressive
+    volumes:
+      - edge_models:/app/models
+      - edge_cache:/app/cache
+    networks:
+      - edge-network
+    depends_on:
+      - safe-rl-api
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # Local model registry for offline operation
+  local-model-registry:
+    image: minio/minio:latest
+    container_name: local-model-registry-edge
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - MINIO_REGION_NAME=edge-region
+    volumes:
+      - edge_registry:/data
+    networks:
+      - edge-network
+    command: server /data --console-address ":9001"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Edge-optimized safety monitor
+  safety-monitor:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.safety
+    image: safety-monitor:edge
+    container_name: safety-monitor-edge
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=edge
+      - MONITORING_LEVEL=critical_only
+      - ALERT_THRESHOLD_HIGH=0.8
+      - LOCAL_STORAGE=true
+    volumes:
+      - edge_safety_data:/app/safety_data
+      - edge_logs:/app/logs
+    networks:
+      - edge-network
+    depends_on:
+      - safe-rl-api
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Lightweight metrics collector
+  prometheus-edge:
+    image: prom/prometheus:latest
+    container_name: prometheus-edge
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus-edge.yml:/etc/prometheus/prometheus.yml
+      - edge_metrics:/prometheus
+    networks:
+      - edge-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+
+  # Local time-series database for offline operation
+  influxdb-edge:
+    image: influxdb:2.7-alpine
+    container_name: influxdb-edge
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword
+      - DOCKER_INFLUXDB_INIT_ORG=edge-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=safe-rl-edge
+      - DOCKER_INFLUXDB_INIT_RETENTION=7d
+    volumes:
+      - edge_influx_data:/var/lib/influxdb2
+    networks:
+      - edge-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Local data sync service
+  data-sync:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.sync
+    image: data-sync:edge
+    container_name: data-sync-edge
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=edge
+      - SYNC_MODE=batch
+      - SYNC_INTERVAL=3600  # 1 hour
+      - CLOUD_ENDPOINT=${CLOUD_SYNC_ENDPOINT}
+      - SYNC_ENABLED=${CLOUD_SYNC_ENABLED:-false}
+    volumes:
+      - edge_data:/app/data
+      - edge_models:/app/models
+      - edge_logs:/app/logs
+    networks:
+      - edge-network
+    depends_on:
+      - safe-rl-api
+      - local-model-registry
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+
+  # Edge load balancer
+  nginx-edge:
+    image: nginx:alpine
+    container_name: nginx-edge
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-edge.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    networks:
+      - edge-network
+    depends_on:
+      - safe-rl-api
+      - policy-inference
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 128M
+
+networks:
+  edge-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  edge_models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/models
+  edge_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/data
+  edge_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/logs
+  edge_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/cache
+  edge_registry:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/registry
+  edge_safety_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/safety
+  edge_metrics:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/metrics
+  edge_influx_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/edge/influx

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: safe-rl-production
+  labels:
+    name: safe-rl-production
+    environment: production
+    app.kubernetes.io/name: safe-rl
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: namespace

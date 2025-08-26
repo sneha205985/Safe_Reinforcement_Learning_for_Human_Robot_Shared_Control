@@ -1,0 +1,591 @@
+version: '3.8'
+
+services:
+  # Hybrid orchestrator - manages cloud/edge coordination
+  hybrid-orchestrator:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.orchestrator
+    image: hybrid-orchestrator:latest
+    container_name: hybrid-orchestrator
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - ENVIRONMENT=hybrid
+      - ORCHESTRATOR_MODE=primary
+      - CLOUD_ENDPOINT=${CLOUD_ENDPOINT}
+      - EDGE_ENDPOINTS=${EDGE_ENDPOINTS}
+      - FAILOVER_STRATEGY=intelligent
+      - LOAD_BALANCING_STRATEGY=latency_aware
+    volumes:
+      - ./config/hybrid.yaml:/app/config/environment.yaml
+      - hybrid_orchestrator_data:/app/data
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Cloud connector service
+  cloud-connector:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.connector
+    image: cloud-connector:latest
+    container_name: cloud-connector
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=hybrid
+      - CONNECTOR_TYPE=cloud
+      - CLOUD_REGION=${CLOUD_REGION:-us-east-1}
+      - CLOUD_PROVIDER=${CLOUD_PROVIDER:-aws}
+      - SYNC_INTERVAL=300  # 5 minutes
+      - BATCH_SIZE=100
+      - COMPRESSION_ENABLED=true
+      - ENCRYPTION_ENABLED=true
+    volumes:
+      - hybrid_cloud_cache:/app/cache
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - hybrid-orchestrator
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Edge connector service
+  edge-connector:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.connector
+    image: edge-connector:latest
+    container_name: edge-connector
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=hybrid
+      - CONNECTOR_TYPE=edge
+      - EDGE_DISCOVERY_ENABLED=true
+      - EDGE_HEALTH_CHECK_INTERVAL=60
+      - EDGE_FAILOVER_THRESHOLD=3
+      - DATA_AGGREGATION_ENABLED=true
+    volumes:
+      - hybrid_edge_cache:/app/cache
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - hybrid-orchestrator
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Intelligent load balancer
+  intelligent-lb:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.loadbalancer
+    image: intelligent-lb:latest
+    container_name: intelligent-lb
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - ENVIRONMENT=hybrid
+      - LB_STRATEGY=ml_based
+      - LATENCY_THRESHOLD_MS=100
+      - ERROR_RATE_THRESHOLD=0.05
+      - CAPACITY_THRESHOLD=0.8
+      - ML_MODEL_PATH=/app/models/lb_model.pkl
+      - TELEMETRY_ENABLED=true
+    volumes:
+      - ./config/lb-config.yaml:/app/config/lb.yaml
+      - hybrid_lb_models:/app/models
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - hybrid-orchestrator
+      - cloud-connector
+      - edge-connector
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  # Data synchronization service
+  data-sync-hybrid:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.sync
+    image: data-sync-hybrid:latest
+    container_name: data-sync-hybrid
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=hybrid
+      - SYNC_MODE=bidirectional
+      - CONFLICT_RESOLUTION=latest_wins
+      - CLOUD_SYNC_ENABLED=true
+      - EDGE_SYNC_ENABLED=true
+      - DELTA_SYNC_ENABLED=true
+      - COMPRESSION_RATIO=0.7
+    volumes:
+      - hybrid_sync_data:/app/sync_data
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - cloud-connector
+      - edge-connector
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Model distribution service
+  model-distributor:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.distributor
+    image: model-distributor:latest
+    container_name: model-distributor
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=hybrid
+      - DISTRIBUTION_STRATEGY=adaptive
+      - MODEL_VERSIONING_ENABLED=true
+      - ROLLBACK_ENABLED=true
+      - CANARY_DEPLOYMENT_ENABLED=true
+      - EDGE_OPTIMIZATION_ENABLED=true
+    volumes:
+      - hybrid_models:/app/models
+      - hybrid_model_cache:/app/model_cache
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - hybrid-orchestrator
+      - data-sync-hybrid
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  # Hybrid monitoring service
+  hybrid-monitor:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.monitor
+    image: hybrid-monitor:latest
+    container_name: hybrid-monitor
+    restart: unless-stopped
+    ports:
+      - "3000:3000"  # Grafana
+    environment:
+      - ENVIRONMENT=hybrid
+      - MONITORING_MODE=comprehensive
+      - CLOUD_METRICS_ENABLED=true
+      - EDGE_METRICS_ENABLED=true
+      - CROSS_REGION_MONITORING=true
+      - ANOMALY_DETECTION_ENABLED=true
+    volumes:
+      - hybrid_monitor_data:/app/data
+      - ./monitoring/grafana-hybrid:/etc/grafana
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - prometheus-hybrid
+      - influxdb-hybrid
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Time series database for hybrid metrics
+  influxdb-hybrid:
+    image: influxdb:2.7-alpine
+    container_name: influxdb-hybrid
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=hybridpassword123
+      - DOCKER_INFLUXDB_INIT_ORG=hybrid-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=safe-rl-hybrid
+      - DOCKER_INFLUXDB_INIT_RETENTION=30d
+    volumes:
+      - hybrid_influx_data:/var/lib/influxdb2
+      - hybrid_influx_config:/etc/influxdb2
+    networks:
+      - hybrid-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Prometheus for hybrid monitoring
+  prometheus-hybrid:
+    image: prom/prometheus:latest
+    container_name: prometheus-hybrid
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus-hybrid.yml:/etc/prometheus/prometheus.yml
+      - hybrid_prometheus_data:/prometheus
+    networks:
+      - hybrid-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.max-block-duration=2h'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Redis for hybrid caching and coordination
+  redis-hybrid:
+    image: redis:7-alpine
+    container_name: redis-hybrid
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - hybrid_redis_data:/data
+      - ./redis/redis-hybrid.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - hybrid-network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Message queue for hybrid coordination
+  rabbitmq-hybrid:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-hybrid
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=hybrid
+      - RABBITMQ_DEFAULT_PASS=hybridqueue123
+      - RABBITMQ_DEFAULT_VHOST=hybrid
+    volumes:
+      - hybrid_rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - hybrid-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Configuration management service
+  config-manager:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.config
+    image: config-manager:latest
+    container_name: config-manager
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      - ENVIRONMENT=hybrid
+      - CONFIG_STORE=etcd
+      - ENCRYPTION_ENABLED=true
+      - VERSIONING_ENABLED=true
+      - ROLLBACK_ENABLED=true
+      - AUTO_RELOAD_ENABLED=true
+    volumes:
+      - hybrid_config_data:/app/config_data
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - etcd-hybrid
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+
+  # Distributed configuration store
+  etcd-hybrid:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: etcd-hybrid
+    restart: unless-stopped
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    environment:
+      - ETCD_NAME=hybrid-etcd
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd-hybrid:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd-hybrid:2380
+      - ETCD_INITIAL_CLUSTER=hybrid-etcd=http://etcd-hybrid:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=hybrid-etcd-cluster
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    volumes:
+      - hybrid_etcd_data:/etcd-data
+    networks:
+      - hybrid-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+
+  # Network proxy for secure edge communication
+  network-proxy:
+    image: envoyproxy/envoy:v1.27-latest
+    container_name: network-proxy
+    restart: unless-stopped
+    ports:
+      - "10000:10000"  # Envoy admin interface
+      - "8000:8000"    # Safe RL API proxy
+      - "8001:8001"    # Policy inference proxy
+    volumes:
+      - ./envoy/envoy-hybrid.yaml:/etc/envoy/envoy.yaml
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - intelligent-lb
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:10000/stats"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Security gateway
+  security-gateway:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.security
+    image: security-gateway:latest
+    container_name: security-gateway
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    environment:
+      - ENVIRONMENT=hybrid
+      - TLS_ENABLED=true
+      - MTLS_ENABLED=true
+      - JWT_VALIDATION_ENABLED=true
+      - RATE_LIMITING_ENABLED=true
+      - DDoS_PROTECTION_ENABLED=true
+      - THREAT_DETECTION_ENABLED=true
+    volumes:
+      - ./ssl:/app/ssl
+      - hybrid_security_logs:/app/security_logs
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - network-proxy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Backup coordination service
+  backup-coordinator:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.backup
+    image: backup-coordinator:latest
+    container_name: backup-coordinator
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=hybrid
+      - BACKUP_STRATEGY=multi_site
+      - CLOUD_BACKUP_ENABLED=true
+      - EDGE_BACKUP_ENABLED=true
+      - INCREMENTAL_BACKUP_ENABLED=true
+      - BACKUP_ENCRYPTION_ENABLED=true
+      - BACKUP_SCHEDULE=0 2 * * *  # Daily at 2 AM
+    volumes:
+      - hybrid_backup_data:/app/backup_data
+      - hybrid_logs:/app/logs
+    networks:
+      - hybrid-network
+    depends_on:
+      - cloud-connector
+      - edge-connector
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+
+networks:
+  hybrid-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: hybrid-br0
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+
+volumes:
+  hybrid_orchestrator_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/orchestrator
+  hybrid_cloud_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/cloud_cache
+  hybrid_edge_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/edge_cache
+  hybrid_lb_models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/lb_models
+  hybrid_sync_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/sync_data
+  hybrid_models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/models
+  hybrid_model_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/model_cache
+  hybrid_monitor_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/monitor_data
+  hybrid_influx_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/influx_data
+  hybrid_influx_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/influx_config
+  hybrid_prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/prometheus_data
+  hybrid_redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/redis_data
+  hybrid_rabbitmq_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/rabbitmq_data
+  hybrid_config_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/config_data
+  hybrid_etcd_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/etcd_data
+  hybrid_security_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/security_logs
+  hybrid_backup_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/backup_data
+  hybrid_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/safe-rl/hybrid/logs

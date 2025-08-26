@@ -1,0 +1,398 @@
+# Production Environment Configuration
+# This configuration is optimized for production deployment with security and performance
+
+environment:
+  name: production
+  debug: false
+  log_level: INFO
+  testing_mode: false
+
+# Database Configuration (Production)
+database:
+  url: ${DATABASE_URL}  # Provided via environment variable
+  pool_size: 20
+  max_overflow: 30
+  echo: false
+  auto_create_tables: false
+  migrations_auto_run: false
+  connection_timeout: 30
+  pool_timeout: 30
+  ssl_mode: require
+  
+  # Connection pooling optimization
+  pool_pre_ping: true
+  pool_recycle: 3600
+  
+  # Read replicas for scaling
+  read_replicas:
+    - ${DATABASE_READ_REPLICA_1_URL}
+    - ${DATABASE_READ_REPLICA_2_URL}
+
+# Redis Configuration (Production)
+redis:
+  url: ${REDIS_URL}
+  max_connections: 50
+  decode_responses: true
+  socket_timeout: 5
+  socket_connect_timeout: 5
+  retry_on_timeout: true
+  health_check_interval: 30
+  
+  # Redis Cluster Configuration
+  cluster:
+    enabled: true
+    startup_nodes:
+      - host: ${REDIS_NODE_1_HOST}
+        port: 6379
+      - host: ${REDIS_NODE_2_HOST}
+        port: 6379
+      - host: ${REDIS_NODE_3_HOST}
+        port: 6379
+
+# Model Registry (Production)
+model_registry:
+  url: ${MODEL_REGISTRY_URL}
+  timeout: 60
+  cache_dir: /app/models
+  auto_register: false
+  versioning: true
+  
+  # S3 backend for model storage
+  storage_backend:
+    type: s3
+    bucket: ${MODEL_STORAGE_BUCKET}
+    region: ${AWS_REGION}
+    access_key: ${AWS_ACCESS_KEY_ID}
+    secret_key: ${AWS_SECRET_ACCESS_KEY}
+
+# API Configuration (Production)
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: ${API_WORKERS:-8}
+  worker_class: uvicorn.workers.UvicornWorker
+  worker_timeout: 300
+  keepalive: 2
+  max_requests: 1000
+  max_requests_jitter: 50
+  preload_app: true
+  
+  cors_origins:
+    - https://saferl.example.com
+    - https://dashboard.saferl.example.com
+    
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 1000
+    burst_size: 100
+    
+  authentication:
+    enabled: true
+    jwt_secret: ${JWT_SECRET_KEY}
+    token_expiry: 3600
+    refresh_token_expiry: 86400
+
+# Safety Configuration (Production - Strict)
+safety:
+  strict_mode: true
+  max_violations_per_hour: 5  # Very strict in production
+  constraint_tolerance: 0.01
+  emergency_stop_enabled: true
+  validation_enabled: true
+  
+  # Safety monitoring
+  monitoring:
+    real_time_validation: true
+    anomaly_detection: true
+    predictive_safety: true
+    
+  # Compliance
+  audit_logging: true
+  safety_reports: true
+  certification_mode: true
+
+# Monitoring Configuration (Production)
+monitoring:
+  enabled: true
+  metrics_port: 9090
+  collection_interval: 30
+  detailed_profiling: false  # Reduced overhead
+  
+  prometheus:
+    enabled: true
+    port: 9090
+    retention: 30d
+    
+  grafana:
+    enabled: true
+    url: ${GRAFANA_URL}
+    
+  alerting:
+    enabled: true
+    channels:
+      - slack
+      - pagerduty
+      - email
+      
+  # Distributed tracing
+  tracing:
+    enabled: true
+    jaeger_endpoint: ${JAEGER_ENDPOINT}
+    sample_rate: 0.1
+
+# Algorithm Configuration (Production Optimized)
+algorithms:
+  sac_lagrangian:
+    lr_actor: 1e-4  # More conservative learning rates
+    lr_critic: 1e-4
+    lr_lagrange: 5e-4
+    hidden_dim: 512  # Larger networks for better performance
+    constraint_threshold: 0.01  # Stricter constraints
+    
+  td3_constrained:
+    lr_actor: 1e-4
+    lr_critic: 1e-4
+    hidden_dim: 512
+    constraint_threshold: 0.01
+    policy_delay: 2
+    
+  mpc_controller:
+    prediction_horizon: 20  # Longer horizon for better planning
+    control_horizon: 10
+    optimization_method: gurobi  # Commercial solver for better performance
+    solver_timeout: 5.0
+
+# Environment Configuration
+environments:
+  default_max_episode_steps: 2000  # Longer episodes for complex tasks
+  render_mode: null  # No rendering in production
+  
+  manipulator_7dof:
+    physics_engine: mujoco  # Higher fidelity physics
+    real_time: true
+    gui: false
+    
+  mobile_base:
+    map_size: [50, 50]  # Larger, more realistic maps
+    obstacles: realistic
+    sensor_noise: 0.001  # Low noise for production systems
+
+# Training Configuration (Production)
+training:
+  batch_size: 512  # Larger batches for stability
+  buffer_size: 1000000
+  learning_starts: 10000
+  train_freq: 1
+  gradient_steps: 1
+  target_update_interval: 1
+  
+  # Checkpointing (Production)
+  save_freq: 5000
+  checkpoint_dir: ${CHECKPOINT_STORAGE_PATH}
+  keep_checkpoints: 10
+  
+  # Distributed training
+  distributed:
+    enabled: true
+    backend: nccl
+    world_size: ${WORLD_SIZE}
+    
+  # Early stopping (Conservative)
+  early_stopping:
+    enabled: true
+    patience: 500
+    min_delta: 0.0001
+
+# Evaluation Configuration
+evaluation:
+  eval_freq: 10000
+  n_eval_episodes: 100  # More episodes for reliable evaluation
+  eval_env_kwargs:
+    render: false
+
+# Logging Configuration (Production)
+logging:
+  version: 1
+  disable_existing_loggers: false
+  
+  formatters:
+    json:
+      class: pythonjsonlogger.jsonlogger.JsonFormatter
+      format: '%(asctime)s %(name)s %(levelname)s %(message)s'
+    standard:
+      format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+      
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: INFO
+      formatter: json
+      stream: ext://sys.stdout
+      
+    file:
+      class: logging.handlers.RotatingFileHandler
+      level: INFO
+      formatter: json
+      filename: /var/log/saferl/production.log
+      maxBytes: 104857600  # 100MB
+      backupCount: 10
+      
+    syslog:
+      class: logging.handlers.SysLogHandler
+      level: WARNING
+      formatter: standard
+      address: ${SYSLOG_ADDRESS}
+      
+  loggers:
+    safe_rl_human_robot:
+      level: INFO
+      handlers: [console, file, syslog]
+      propagate: false
+      
+    uvicorn:
+      level: INFO
+      handlers: [console, file]
+      
+  root:
+    level: INFO
+    handlers: [console, file]
+
+# Security Configuration (Production)
+security:
+  secret_key: ${SECRET_KEY}
+  cors_enabled: true
+  cors_allow_credentials: true
+  csrf_enabled: true
+  rate_limiting_enabled: true
+  
+  # TLS Configuration
+  tls:
+    enabled: true
+    cert_file: ${TLS_CERT_PATH}
+    key_file: ${TLS_KEY_PATH}
+    min_version: TLSv1.2
+    
+  # Authentication
+  auth:
+    enabled: true
+    provider: oauth2
+    jwt_algorithm: RS256
+    public_key_path: ${JWT_PUBLIC_KEY_PATH}
+    
+  # Encryption
+  encryption:
+    algorithm: AES-256-GCM
+    key_rotation: true
+    key_rotation_interval: 86400  # Daily
+
+# Performance Configuration (Production)
+performance:
+  max_workers: ${MAX_WORKERS:-16}
+  worker_memory_limit: 8192  # MB
+  gpu_memory_fraction: 0.8
+  
+  caching:
+    enabled: true
+    ttl: 3600  # 1 hour
+    max_size: 10000
+    backend: redis
+    
+  batch_processing:
+    enabled: true
+    batch_size: 128
+    timeout: 30.0
+    
+  # Connection pooling
+  connection_pool:
+    max_size: 100
+    min_size: 10
+    
+  # Auto-scaling
+  autoscaling:
+    enabled: true
+    min_replicas: 3
+    max_replicas: 20
+    cpu_threshold: 70
+    memory_threshold: 80
+
+# Feature Flags (Production)
+features:
+  async_inference: true
+  model_caching: true
+  metrics_collection: true
+  safety_monitoring: true
+  human_feedback_collection: true
+  advanced_profiling: false  # Disabled for performance
+  blue_green_deployment: true
+  canary_deployment: true
+
+# High Availability
+high_availability:
+  enabled: true
+  health_checks:
+    enabled: true
+    interval: 30
+    timeout: 10
+    unhealthy_threshold: 3
+    
+  load_balancing:
+    algorithm: round_robin
+    sticky_sessions: false
+    
+  backup_strategy:
+    enabled: true
+    frequency: hourly
+    retention: 30d
+    
+  disaster_recovery:
+    enabled: true
+    rpo: 900  # 15 minutes
+    rto: 3600  # 1 hour
+
+# Data Management (Production)
+data:
+  storage_path: ${DATA_STORAGE_PATH}
+  backup_enabled: true
+  compression_enabled: true
+  encryption_enabled: true
+  
+  # Data lifecycle management
+  lifecycle:
+    hot_storage_days: 30
+    warm_storage_days: 90
+    cold_storage_days: 365
+    
+  datasets:
+    auto_download: false
+    cache_dir: ${DATASET_CACHE_PATH}
+    validation_split: 0.1
+
+# Resource Limits
+resources:
+  memory_limit: 16Gi
+  cpu_limit: 8
+  gpu_limit: 2
+  storage_limit: 100Gi
+  
+  requests:
+    memory: 8Gi
+    cpu: 4
+    gpu: 1
+    
+# Compliance and Governance
+compliance:
+  gdpr_enabled: true
+  data_retention_days: 2555  # 7 years
+  audit_logging: true
+  privacy_anonymization: true
+  
+  certifications:
+    - iso27001
+    - soc2_type2
+    - hipaa
+    
+# Business Metrics
+business_metrics:
+  sla_uptime: 99.9  # 99.9% uptime SLA
+  max_response_time: 100  # milliseconds
+  error_rate_threshold: 0.1  # 0.1% error rate

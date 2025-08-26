@@ -1,0 +1,126 @@
+# Safe RL Human-Robot Shared Control - Simulation Configuration
+# Optimized for simulation environments and research
+
+config_version: "1.0.0"
+environment: "simulation"
+created_at: "2025-08-26T10:00:00"
+updated_at: "2025-08-26T10:00:00"
+
+# Safety Configuration - Simulation appropriate
+safety:
+  emergency_stop_enabled: true
+  watchdog_timeout_sec: 10.0  # Generous timeout for simulation delays
+  safety_monitoring_rate_hz: 100.0
+  force_limits_enabled: true
+  position_limits_enabled: true
+  velocity_limits_enabled: true
+  redundant_checking: false  # Not critical in simulation
+  fail_safe_mode: "safe_position"  # Less disruptive in simulation
+  
+  # Simulation-appropriate force limits
+  max_force_x: 100.0
+  max_force_y: 100.0
+  max_force_z: 200.0
+  max_torque_x: 50.0
+  max_torque_y: 50.0
+  max_torque_z: 25.0
+
+# Hardware Configuration - Simulation setup
+hardware:
+  robot_type: "simulation"
+  hardware_id: "sim_robot_001"
+  communication_protocol: "simulation"
+  control_frequency_hz: 100.0  # Match simulation timestep
+  
+  num_joints: 6
+  joint_names:
+    - "shoulder_pitch"
+    - "shoulder_roll"
+    - "elbow"
+    - "wrist_pitch"
+    - "wrist_roll"
+    - "gripper"
+  
+  # Generous limits for simulation testing
+  position_limits_min: [-3.0, -2.5, -3.0, -2.5, -3.0, -1.0]
+  position_limits_max: [3.0, 2.5, 3.0, 2.5, 3.0, 1.0]
+  velocity_limits: [5.0, 5.0, 5.0, 5.0, 5.0, 3.0]
+  effort_limits: [200.0, 200.0, 150.0, 100.0, 100.0, 50.0]
+  
+  ros_namespace: "/safe_rl_sim"
+  serial_port: "/dev/null"  # Not used in simulation
+  serial_baudrate: 115200
+  can_interface: "vcan0"  # Virtual CAN for simulation
+  ethernet_address: "127.0.0.1"
+  ethernet_port: 11311  # ROS master port
+
+# Algorithm Configuration - Research/simulation optimized
+algorithm:
+  algorithm_type: "cpo"
+  policy_network_type: "mlp"
+  
+  # Larger network for simulation experiments
+  hidden_layers: [512, 512, 256, 128]
+  activation_function: "tanh"
+  learning_rate: 0.0003
+  
+  # Large batch size for simulation
+  batch_size: 4096
+  num_epochs: 15
+  gamma: 0.99
+  gae_lambda: 0.95
+  
+  # Experimental safety constraints
+  cost_limit: 30.0
+  constraint_violation_penalty: 100.0
+  safety_margin: 0.15
+  
+  cpo_damping_coeff: 0.1
+  cpo_max_kl: 0.01
+  
+  # Longer episodes for research
+  max_episode_steps: 2000
+  num_parallel_envs: 16  # More parallel environments
+  total_training_steps: 5000000  # Extended training
+
+# User Preferences - Simulation user
+user_preferences:
+  user_id: "simulation_user"
+  preferred_assistance_level: 0.4
+  preferred_control_mode: "shared"
+  
+  feedback_type: "visual"  # Visual feedback in simulation
+  feedback_intensity: 0.7
+  
+  conservative_mode: false  # Allow experimentation
+  custom_safety_limits: {}
+  
+  adaptation_enabled: true
+  learning_from_demonstrations: true
+  user_model_path: "simulation/models/sim_user_model.pkl"
+
+# Logging Configuration - Research-focused logging
+logging:
+  log_level: "INFO"
+  log_to_file: true
+  log_to_console: true
+  log_file_path: "logs/safe_rl_simulation.log"
+  max_log_file_size_mb: 500  # Large logs for research data
+  backup_count: 20
+  
+  enable_performance_monitoring: true
+  metrics_collection_rate_hz: 25.0  # Higher rate for research
+  
+  # Comprehensive logging for research analysis
+  log_sensor_data: true
+  log_control_commands: true
+  log_safety_events: true
+  log_user_interactions: true
+  
+  # No remote monitoring for simulation
+  enable_remote_monitoring: false
+  monitoring_server_url: ""
+  monitoring_api_key: ""
+
+# Environment-specific overrides
+environment_overrides: {}

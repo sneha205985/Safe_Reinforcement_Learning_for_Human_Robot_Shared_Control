@@ -1,0 +1,98 @@
+# Site settings
+title: "Safe RL for Human-Robot Shared Control"
+description: "Constrained Policy Optimization for Robot Assistance Systems"
+url: ""
+baseurl: ""
+author: "Safe RL Research Team"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Kramdown settings
+kramdown:
+  math_engine: mathjax
+  syntax_highlighter: rouge
+  input: GFM
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+
+# MathJax settings for LaTeX rendering
+mathjax: true
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation
+header_pages:
+  - pages/about.md
+  - pages/methodology.md
+  - pages/results.md
+  - pages/conclusion.md
+  - pages/contact.md
+
+# Collections
+collections:
+  posts:
+    output: true
+    permalink: /:categories/:title/
+
+# Exclude files
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - setup.sh
+  - README.md
+
+# Include files
+include:
+  - _pages
+
+# Sass settings
+sass:
+  sass_dir: assets/css
+  style: compressed
+
+# Site data
+project:
+  name: "Safe Reinforcement Learning for Human-Robot Shared Control"
+  version: "1.0.0"
+  repository: "https://github.com/your-repo/safe-rl-human-robot"
+  documentation: "https://your-site.github.io/safe-rl-human-robot"
+
+# SEO settings
+google_analytics: UA-XXXXXXXXX-X  # Replace with your tracking ID
+google_site_verification: ""      # Replace with your verification code
+
+# Social
+github_username: your-username
+linkedin_username: your-linkedin
+email: your-email@domain.com
+
+# Default values for pages
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+      author: "Safe RL Research Team"
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "Safe RL Research Team"

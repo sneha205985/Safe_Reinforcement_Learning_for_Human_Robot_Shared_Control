@@ -1,0 +1,10 @@
+adaptation_enabled: true
+conservative_mode: false
+custom_safety_limits: {}
+feedback_intensity: 0.7
+feedback_type: haptic
+learning_from_demonstrations: true
+preferred_assistance_level: 0.8
+preferred_control_mode: autonomous
+user_id: test_user
+user_model_path: ''

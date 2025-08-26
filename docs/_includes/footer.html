@@ -1,0 +1,158 @@
+<footer class="site-footer h-card">
+  <data class="u-url" href="{{ "/" | relative_url }}"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      
+      <!-- Contact and Social Links -->
+      <div class="footer-col footer-col-1">
+        <h3>Contact</h3>
+        <ul class="contact-list">
+          {%- if site.email -%}
+            <li><a class="u-email" href="mailto:{{ site.email }}">{{ site.email }}</a></li>
+          {%- endif -%}
+          {%- if site.github_username -%}
+            <li>
+              <a href="https://github.com/{{ site.github_username }}">
+                <svg class="svg-icon grey">
+                  <use xlink:href="{{ '/assets/minima-social-icons.svg#github' | relative_url }}"></use>
+                </svg>
+                <span class="username">{{ site.github_username }}</span>
+              </a>
+            </li>
+          {%- endif -%}
+          {%- if site.linkedin_username -%}
+            <li>
+              <a href="https://linkedin.com/in/{{ site.linkedin_username }}">
+                <svg class="svg-icon grey">
+                  <use xlink:href="{{ '/assets/minima-social-icons.svg#linkedin' | relative_url }}"></use>
+                </svg>
+                <span class="username">{{ site.linkedin_username }}</span>
+              </a>
+            </li>
+          {%- endif -%}
+        </ul>
+      </div>
+
+      <!-- Project Information -->
+      <div class="footer-col footer-col-2">
+        <h3>Project Info</h3>
+        <ul class="project-info">
+          <li><strong>Version:</strong> {{ site.project.version }}</li>
+          <li><strong>Last Updated:</strong> {{ site.time | date: "%B %d, %Y" }}</li>
+          <li>
+            <a href="{{ site.project.repository }}" target="_blank">
+              View on GitHub
+            </a>
+          </li>
+          <li>
+            <a href="{{ '/feed.xml' | relative_url }}" target="_blank">
+              RSS Feed
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-col footer-col-3">
+        <h3>Quick Links</h3>
+        <ul class="quick-links">
+          <li><a href="{{ '/pages/methodology.html' | relative_url }}">Methodology</a></li>
+          <li><a href="{{ '/pages/results.html' | relative_url }}">Results</a></li>
+          <li><a href="{{ '/pages/about.html' | relative_url }}">About Project</a></li>
+          <li><a href="{{ '/pages/contact.html' | relative_url }}">Contact</a></li>
+        </ul>
+        
+        <!-- Citation Information -->
+        <div class="citation-info">
+          <h4>Citation</h4>
+          <details>
+            <summary>BibTeX</summary>
+            <pre><code>@misc{safe_rl_human_robot_2024,
+  title={Safe Reinforcement Learning for Human-Robot Shared Control},
+  author={Safe RL Research Team},
+  year={2024},
+  url={{{ site.url }}{{ site.baseurl }}}
+}</code></pre>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright and License -->
+    <div class="footer-bottom">
+      <p class="copyright">
+        &copy; {{ site.time | date: "%Y" }} {{ site.author }}. 
+        
+        {%- if site.license -%}
+          Licensed under {{ site.license }}.
+        {%- else -%}
+          All rights reserved.
+        {%- endif -%}
+      </p>
+      
+      <p class="disclaimer">
+        This research is provided for educational and scientific purposes. 
+        Please refer to the <a href="{{ '/pages/about.html#safety-disclaimer' | relative_url }}">safety disclaimer</a> 
+        before implementing in real systems.
+      </p>
+      
+      <!-- Built with Jekyll -->
+      <p class="built-with">
+        Built with <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> • 
+        Hosted on <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Back to top functionality -->
+  <div class="back-to-top">
+    <button id="back-to-top-btn" title="Back to top">
+      <svg width="12" height="12" viewBox="0 0 12 12">
+        <path d="M6 3l3 3H7v4H5V6H3l3-3z" fill="currentColor"/>
+      </svg>
+    </button>
+  </div>
+
+</footer>
+
+<!-- JavaScript for footer functionality -->
+<script>
+// Back to top button functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const backToTopBtn = document.getElementById('back-to-top-btn');
+  
+  // Show/hide button based on scroll position
+  window.addEventListener('scroll', function() {
+    if (window.pageYOffset > 300) {
+      backToTopBtn.style.display = 'block';
+      backToTopBtn.style.opacity = '1';
+    } else {
+      backToTopBtn.style.opacity = '0';
+      setTimeout(() => {
+        if (window.pageYOffset <= 300) {
+          backToTopBtn.style.display = 'none';
+        }
+      }, 300);
+    }
+  });
+  
+  // Smooth scroll to top
+  backToTopBtn.addEventListener('click', function() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
+});
+
+// Reading progress bar
+window.addEventListener('scroll', function() {
+  const progressBar = document.getElementById('progress-bar');
+  if (progressBar) {
+    const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (window.scrollY / windowHeight) * 100;
+    progressBar.style.width = scrolled + '%';
+  }
+});
+</script>

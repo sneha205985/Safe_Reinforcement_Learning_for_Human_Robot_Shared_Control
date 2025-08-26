@@ -1,0 +1,97 @@
+================================================================================
+SAFE RL SYSTEM - COMPREHENSIVE PRODUCTION READINESS REPORT
+================================================================================
+
+Validation Level: COMPREHENSIVE
+Validation Timestamp: 2025-08-26 10:33:23
+Test Duration: 15.10 seconds
+
+OVERALL ASSESSMENT
+----------------------------------------
+Overall Score: 21.2/100.0
+Production Ready: ❌ NO
+
+DETAILED SCORES
+----------------------------------------
+System Integration: 0.0/100.0
+Performance:        85.0/100.0
+Security:           0.0/100.0
+Reliability:        100.0/100.0
+
+TEST EXECUTION SUMMARY
+----------------------------------------
+Tests Run:    2
+Tests Passed: 1
+Tests Failed: 1
+Success Rate: 50.0%
+
+PERFORMANCE METRICS
+----------------------------------------
+Startup Time:     0.105 seconds
+Shutdown Time:    0.053 seconds
+Memory Usage:     37.4 MB
+Max Memory:       925.0 MB
+CPU Usage:        0.0%
+Throughput:       165.0 ops/sec
+Error Rate:       2.14%
+Recovery Time:    0.505 seconds
+Avg Response:     6.06 ms
+Min Response:     1.35 ms
+Max Response:     12.19 ms
+
+SECURITY ASSESSMENT
+----------------------------------------
+Security Score:      0.0/100.0
+Vulnerabilities:     17
+Critical Issues:     0
+Vulnerabilities Found:
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/deployment/kubernetes/production/configmap.yaml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/deployment/docker-compose.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/deployment/docker-compose.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/deployment/docker-compose.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/.github/workflows/ci.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/.github/workflows/ci.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/.github/workflows/ci.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/.github/workflows/ci.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/deployment/edge/docker-compose.edge.yml
+  • Potential secret exposure in /Users/snehagupta/Safe_Reinforcement_Learning_for_Human_Robot_Shared_Control/deployment/edge/docker-compose.edge.yml
+  ... and 7 more
+
+STRESS TEST RESULTS
+----------------------------------------
+Max Concurrent Ops:    500
+Error Recovery:        ✅ PASS
+Graceful Degradation:  ✅ PASS
+Resource Handling:     ✅ PASS
+Failover Time:         1.510 seconds
+
+CRITICAL ISSUES
+----------------------------------------
+❌ System integration validation failed: No module named 'cryptography'
+❌ Memory leak detected during validation
+
+WARNINGS
+----------------------------------------
+⚠️  Memory growth rate: 63.24 MB/sec
+
+RECOMMENDATIONS
+----------------------------------------
+💡 Address security vulnerabilities before production
+💡 System is not ready for production - address critical issues
+
+FINAL ASSESSMENT
+================================================================================
+⚠️  NOT PRODUCTION READY
+
+The Safe RL system has NOT passed production readiness validation.
+Critical issues must be resolved before production deployment.
+
+Overall Score: 21.2/100 (minimum 90 required)
+Critical Issues: 2 (maximum 0 allowed)
+
+Please address all critical issues and re-run validation.
+
+================================================================================
+Report generated: 2025-08-26 10:33:38
+Safe RL Human-Robot Shared Control System
+================================================================================

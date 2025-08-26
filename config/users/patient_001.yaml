@@ -1,0 +1,27 @@
+# User Preferences - Patient 001
+# Personalized configuration matching UserPreferences dataclass
+
+user_id: "patient_001"
+preferred_assistance_level: 0.7  # Higher assistance for rehabilitation
+preferred_control_mode: "shared"  # Shared control with therapist
+
+# Interface preferences
+feedback_type: "multimodal"  # Visual + haptic + audio for rehabilitation
+feedback_intensity: 0.6
+
+# Safety preferences  
+conservative_mode: true  # Conservative approach for patient safety
+custom_safety_limits:
+  max_shoulder_flexion_deg: 90  # Limited by current condition
+  max_effort_percentage: 60    # Reduced effort due to weakness
+
+# Adaptation settings
+adaptation_enabled: true
+learning_from_demonstrations: true
+user_model_path: "models/patient_001_model.pkl"
+
+# Additional metadata would be stored separately in practice
+# condition: "stroke_recovery"
+# therapy_start_date: "2025-07-15" 
+# dominant_hand: "right"
+# mobility_level: "partial"

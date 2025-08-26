@@ -1,0 +1,161 @@
+{
+  "file_structure": {
+    "safe_rl_human_robot/src/optimization/rt_optimizer_integration.py": {
+      "exists": true,
+      "size_bytes": 29076
+    },
+    "safe_rl_human_robot/src/optimization/inference/optimized_policy.py": {
+      "exists": true,
+      "size_bytes": 28087
+    },
+    "safe_rl_human_robot/src/optimization/safety_rt/fast_constraint_checker.py": {
+      "exists": true,
+      "size_bytes": 31949
+    },
+    "safe_rl_human_robot/src/optimization/memory/rt_memory_manager.py": {
+      "exists": true,
+      "size_bytes": 30790
+    },
+    "safe_rl_human_robot/src/optimization/parallel/rt_control_system.py": {
+      "exists": true,
+      "size_bytes": 33154
+    },
+    "safe_rl_human_robot/src/optimization/gpu/cuda_optimizer.py": {
+      "exists": true,
+      "size_bytes": 36680
+    },
+    "safe_rl_human_robot/src/optimization/system/rt_system_config.py": {
+      "exists": true,
+      "size_bytes": 39088
+    },
+    "safe_rl_human_robot/src/optimization/benchmarking/rt_performance_benchmark.py": {
+      "exists": true,
+      "size_bytes": 44894
+    },
+    "safe_rl_human_robot/src/optimization/monitoring/continuous_performance_monitor.py": {
+      "exists": true,
+      "size_bytes": 47304
+    },
+    "examples/rt_optimization_demo.py": {
+      "exists": true,
+      "size_bytes": 18529
+    },
+    "safe_rl_human_robot/src/optimization/README.md": {
+      "exists": true,
+      "size_bytes": 15331
+    }
+  },
+  "imports": {
+    "safe_rl_human_robot/src/optimization/rt_optimizer_integration.py": {
+      "readable": true,
+      "has_imports": true,
+      "has_classes": true,
+      "has_async": true,
+      "has_typing": true,
+      "line_count": 743
+    },
+    "safe_rl_human_robot/src/optimization/inference/optimized_policy.py": {
+      "readable": true,
+      "has_imports": true,
+      "has_classes": true,
+      "has_async": true,
+      "has_typing": true,
+      "line_count": 741
+    },
+    "safe_rl_human_robot/src/optimization/benchmarking/rt_performance_benchmark.py": {
+      "readable": true,
+      "has_imports": true,
+      "has_classes": true,
+      "has_async": false,
+      "has_typing": true,
+      "line_count": 1196
+    }
+  },
+  "dependencies": {
+    "numpy": {
+      "available": true,
+      "error": null
+    },
+    "matplotlib": {
+      "available": true,
+      "error": null
+    },
+    "scipy": {
+      "available": true,
+      "error": null
+    },
+    "pandas": {
+      "available": true,
+      "error": null
+    },
+    "torch": {
+      "available": true,
+      "error": null
+    },
+    "numba": {
+      "available": true,
+      "error": null
+    },
+    "psutil": {
+      "available": true,
+      "error": null
+    },
+    "cupy": {
+      "available": false,
+      "error": "No module named 'cupy'"
+    }
+  },
+  "configuration": {
+    "TimingRequirements": {
+      "class_defined": false,
+      "has_init": true,
+      "file_exists": true
+    },
+    "RTOptimizationConfig": {
+      "class_defined": true,
+      "has_init": true,
+      "file_exists": true
+    },
+    "OptimizedPolicy": {
+      "class_defined": true,
+      "has_init": true,
+      "file_exists": true
+    },
+    "FastConstraintChecker": {
+      "class_defined": true,
+      "has_init": true,
+      "file_exists": true
+    }
+  },
+  "performance_targets": {
+    "readme_exists": true,
+    "targets_defined": {
+      "policy_inference_500us": true,
+      "safety_checking_100us": true,
+      "memory_allocation_10us": true,
+      "total_loop_1000us": true,
+      "control_frequency_1000hz": true,
+      "jitter_tolerance": true
+    },
+    "total_targets_found": 6
+  },
+  "simulated_performance": {
+    "policy_inference": {
+      "mean_time_us": 29.807950486429036,
+      "max_time_us": 1322.4580034147948,
+      "min_time_us": 14.00001929141581,
+      "std_time_us": 129.9301959796997,
+      "meets_500us_target": "True"
+    },
+    "safety_checking": {
+      "mean_time_us": 1.7012414173223078,
+      "max_time_us": 19.37500201165676,
+      "meets_100us_target": "True"
+    },
+    "memory_allocation": {
+      "mean_time_us": 0.26455847546458244,
+      "max_time_us": 0.9169743862003088,
+      "meets_10us_target": "True"
+    }
+  }
+}

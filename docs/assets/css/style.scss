@@ -1,0 +1,810 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+
+@import "minima";
+
+// Custom variables
+$base-font-family: 'Georgia', serif;
+$code-font-family: 'Source Code Pro', monospace;
+$base-font-size:   16px;
+$base-font-weight: 400;
+$small-font-size:  14px;
+$base-line-height: 1.6;
+
+$spacing-unit:     30px;
+
+$text-color:       #000000;
+$background-color: #ffffff;
+$brand-color:      #2a2a2a;
+$brand-color-light: lighten($brand-color, 40%);
+$brand-color-dark:  darken($brand-color, 25%);
+
+$grey-color:       #828282;
+$grey-color-light: lighten($grey-color, 40%);
+$grey-color-dark:  darken($grey-color, 25%);
+
+// Width of the content area
+$content-width:    800px;
+$on-palm:          600px;
+$on-laptop:        800px;
+
+// Use media queries like this:
+// @include media-query($on-palm) {
+//   .wrapper {
+//     padding-right: $spacing-unit / 2;
+//     padding-left: $spacing-unit / 2;
+//   }
+// }
+@mixin media-query($device) {
+  @media screen and (max-width: $device) {
+    @content;
+  }
+}
+
+// Global styles
+body {
+  font-family: $base-font-family;
+  font-size: $base-font-size;
+  font-weight: $base-font-weight;
+  line-height: $base-line-height;
+  color: $text-color;
+  background-color: $background-color;
+  max-width: $content-width;
+  margin: 0 auto;
+  padding: 20px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-feature-settings: "kern" 1;
+     -moz-font-feature-settings: "kern" 1;
+       -o-font-feature-settings: "kern" 1;
+          font-feature-settings: "kern" 1;
+  font-kerning: normal;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6 {
+  color: $text-color;
+  font-weight: 700;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  line-height: 1.2;
+  
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+h1 {
+  font-size: 2.5em;
+  border-bottom: 3px solid $brand-color;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+}
+
+h2 {
+  font-size: 2em;
+  border-bottom: 2px solid $grey-color-light;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+}
+
+h4 {
+  font-size: 1.25em;
+  margin-bottom: 12px;
+}
+
+h5, h6 {
+  font-size: 1.1em;
+  margin-bottom: 10px;
+}
+
+// Paragraphs and text
+p {
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+// Links
+a {
+  color: $brand-color;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $brand-color-dark;
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: darken($brand-color, 15%);
+  }
+}
+
+// Lists
+ul, ol {
+  margin-bottom: 15px;
+  padding-left: 30px;
+
+  li {
+    margin-bottom: 5px;
+  }
+}
+
+// Mathematical equations
+.math, .MathJax, .MathJax_Display {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 1.1em;
+}
+
+.MathJax_Display {
+  margin: 25px 0;
+}
+
+// Figures and images
+figure {
+  text-align: center;
+  margin: 30px 0;
+  
+  img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid $grey-color-light;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  figcaption {
+    font-style: italic;
+    font-size: $small-font-size;
+    color: $grey-color-dark;
+    margin-top: 10px;
+    line-height: 1.4;
+  }
+}
+
+// Code and syntax highlighting
+code {
+  font-family: $code-font-family;
+  font-size: 0.9em;
+  background-color: #f8f8f8;
+  border: 1px solid #e1e1e1;
+  border-radius: 3px;
+  padding: 2px 4px;
+  color: #d14;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  overflow-x: auto;
+  padding: 15px;
+  margin: 20px 0;
+  line-height: 1.4;
+
+  code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-size: 0.85em;
+  }
+}
+
+// Syntax highlighting (Rouge)
+.highlight {
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  margin: 20px 0;
+  
+  pre {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+  }
+  
+  .lineno {
+    color: #999;
+    user-select: none;
+  }
+}
+
+// Tables
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+  font-size: 0.95em;
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+    font-weight: 700;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tbody tr:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+// Blockquotes
+blockquote {
+  border-left: 4px solid $brand-color;
+  padding-left: 20px;
+  margin: 20px 0;
+  font-style: italic;
+  color: $grey-color-dark;
+  background-color: #f9f9f9;
+  padding: 15px 15px 15px 25px;
+  border-radius: 0 4px 4px 0;
+
+  p {
+    margin-bottom: 0;
+  }
+
+  footer {
+    font-size: $small-font-size;
+    text-align: right;
+    margin-top: 10px;
+
+    &:before {
+      content: "— ";
+    }
+  }
+}
+
+// Navigation and header
+.site-header {
+  border-top: 5px solid $brand-color;
+  border-bottom: 1px solid $grey-color-light;
+  min-height: 56px;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.site-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  line-height: 54px;
+  letter-spacing: -1px;
+  margin-bottom: 0;
+  float: left;
+  color: $text-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $brand-color;
+    text-decoration: none;
+  }
+}
+
+.site-nav {
+  float: right;
+  line-height: 54px;
+
+  .nav-trigger {
+    display: none;
+  }
+
+  .menu-icon {
+    display: none;
+  }
+
+  .page-link {
+    color: $text-color;
+    line-height: $base-line-height;
+    margin-left: 20px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $brand-color;
+      text-decoration: none;
+    }
+  }
+
+  .github-icon {
+    vertical-align: text-bottom;
+    margin-right: 5px;
+  }
+
+  @include media-query($on-palm) {
+    position: absolute;
+    top: 9px;
+    right: $spacing-unit / 2;
+    background-color: $background-color;
+    border: 1px solid $grey-color-light;
+    border-radius: 5px;
+    text-align: right;
+
+    label[for="nav-trigger"] {
+      display: block;
+      float: right;
+      width: 36px;
+      height: 36px;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .menu-icon {
+      display: block;
+      float: right;
+      width: 36px;
+      height: 26px;
+      line-height: 0;
+      padding-top: 10px;
+      text-align: center;
+
+      > svg {
+        fill: $grey-color-dark;
+      }
+    }
+
+    input ~ .trigger {
+      clear: both;
+      display: none;
+    }
+
+    input:checked ~ .trigger {
+      display: block;
+      padding-bottom: 5px;
+    }
+
+    .page-link {
+      display: block;
+      padding: 5px 10px;
+      margin-left: 0;
+    }
+  }
+}
+
+// Progress bar
+.progress-container {
+  width: 100%;
+  height: 3px;
+  background-color: $grey-color-light;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.progress-bar {
+  height: 3px;
+  background-color: $brand-color;
+  width: 0%;
+  transition: width 0.1s ease;
+}
+
+// Breadcrumb navigation
+.breadcrumb-nav {
+  background-color: #f8f8f8;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  font-size: $small-font-size;
+
+  .breadcrumb {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+
+    li {
+      &:not(:last-child)::after {
+        content: " / ";
+        padding: 0 8px;
+        color: $grey-color;
+      }
+
+      &.active {
+        color: $grey-color-dark;
+        font-weight: 500;
+      }
+
+      a {
+        color: $brand-color;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+// Search functionality
+.search-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 20px;
+
+  #search-input {
+    padding: 8px 12px;
+    border: 1px solid $grey-color-light;
+    border-radius: 20px;
+    font-size: $small-font-size;
+    width: 200px;
+    transition: width 0.3s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $brand-color;
+      width: 250px;
+    }
+  }
+
+  #search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: $background-color;
+    border: 1px solid $grey-color-light;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+
+    .search-result {
+      padding: 10px;
+      border-bottom: 1px solid $grey-color-light;
+      cursor: pointer;
+
+      &:hover {
+        background-color: $grey-color-light;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .result-title {
+        font-weight: 500;
+        color: $brand-color;
+      }
+
+      .result-excerpt {
+        font-size: $small-font-size;
+        color: $grey-color-dark;
+        margin-top: 5px;
+      }
+    }
+  }
+
+  @include media-query($on-palm) {
+    display: none;
+  }
+}
+
+// Footer
+.site-footer {
+  border-top: 1px solid $grey-color-light;
+  padding: $spacing-unit 0;
+  margin-top: 50px;
+  background-color: #f9f9f9;
+}
+
+.footer-col-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.footer-col {
+  flex: 1;
+  margin-right: $spacing-unit;
+  min-width: 200px;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  h3 {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: $brand-color;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 8px;
+    }
+  }
+
+  @include media-query($on-palm) {
+    flex: none;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}
+
+.footer-bottom {
+  border-top: 1px solid $grey-color-light;
+  padding-top: 15px;
+  font-size: $small-font-size;
+  color: $grey-color-dark;
+  text-align: center;
+
+  p {
+    margin-bottom: 5px;
+  }
+}
+
+.citation-info {
+  margin-top: 20px;
+
+  h4 {
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: $brand-color;
+  }
+
+  details {
+    margin-top: 10px;
+
+    summary {
+      cursor: pointer;
+      font-weight: 500;
+      padding: 5px 0;
+
+      &:hover {
+        color: $brand-color;
+      }
+    }
+
+    pre {
+      font-size: 0.8em;
+      background-color: $background-color;
+      border: 1px solid $grey-color-light;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+  }
+}
+
+// Back to top button
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+
+  #back-to-top-btn {
+    background-color: $brand-color;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: none;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      background-color: $brand-color-dark;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    svg {
+      vertical-align: middle;
+    }
+  }
+}
+
+// Scroll to top button (alternative implementation)
+#scrollToTop {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99;
+  font-size: 18px;
+  border: none;
+  outline: none;
+  background-color: $brand-color;
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background-color: $brand-color-dark;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Post navigation
+.post-nav {
+  border-top: 1px solid $grey-color-light;
+  border-bottom: 1px solid $grey-color-light;
+  padding: 20px 0;
+  margin: 30px 0;
+
+  .post-nav-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    a {
+      flex: 1;
+      padding: 10px 15px;
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      text-decoration: none;
+      color: $brand-color;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: $brand-color;
+        color: white;
+        text-decoration: none;
+      }
+
+      &.post-nav-next {
+        text-align: right;
+        margin-left: 10px;
+      }
+
+      &.post-nav-prev {
+        text-align: left;
+        margin-right: 10px;
+      }
+    }
+
+    @include media-query($on-palm) {
+      flex-direction: column;
+
+      a {
+        margin: 5px 0;
+        text-align: center;
+
+        &.post-nav-next, &.post-nav-prev {
+          margin: 5px 0;
+        }
+      }
+    }
+  }
+}
+
+// Alert boxes
+.alert {
+  padding: 15px;
+  margin: 20px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  &.alert-info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+  }
+
+  &.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+  }
+
+  &.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+  }
+
+  &.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+  }
+}
+
+// Print styles
+@media print {
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000;
+    background: white;
+  }
+
+  .site-header, .site-nav, .breadcrumb-nav, .site-footer, 
+  .back-to-top, #scrollToTop, .progress-container, .search-container {
+    display: none !important;
+  }
+
+  .page-content {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  blockquote, pre, img, figure, table {
+    page-break-inside: avoid;
+  }
+
+  p, h2, h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 90%;
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  body {
+    color: #000;
+    background-color: #fff;
+  }
+
+  a {
+    color: #0000ff;
+
+    &:visited {
+      color: #800080;
+    }
+  }
+
+  .site-header {
+    border-top-color: #000;
+    border-bottom-color: #000;
+  }
+
+  code, pre {
+    background-color: #f0f0f0;
+    border-color: #000;
+  }
+}

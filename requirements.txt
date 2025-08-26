@@ -1,0 +1,7 @@
+torch>=2.0.0
+numpy>=1.21.0
+scipy>=1.7.0
+pytest>=6.0.0
+matplotlib>=3.5.0
+tensorboard>=2.8.0
+gym>=0.21.0

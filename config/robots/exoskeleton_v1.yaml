@@ -1,0 +1,199 @@
+# Exoskeleton Version 1 - Robot-Specific Configuration
+# Hardware-specific parameters for EXO-V1 model
+
+robot_info:
+  model: "EXO-V1"
+  manufacturer: "SafeRobotics Inc."
+  serial_number: "EXO001-2025"
+  firmware_version: "2.1.4"
+  calibration_date: "2025-08-15"
+  last_maintenance: "2025-08-20"
+
+# Physical specifications
+physical_specs:
+  # Joint specifications
+  joints:
+    shoulder_pitch:
+      motor_type: "brushless_dc"
+      max_torque_nm: 120.0
+      max_velocity_rad_s: 2.5
+      gear_ratio: 100
+      encoder_resolution: 4096
+      position_offset_rad: 0.0
+      direction: 1  # 1 or -1
+      
+    shoulder_roll:
+      motor_type: "brushless_dc"
+      max_torque_nm: 100.0
+      max_velocity_rad_s: 2.0
+      gear_ratio: 80
+      encoder_resolution: 4096
+      position_offset_rad: 0.0
+      direction: 1
+      
+    elbow:
+      motor_type: "brushless_dc"
+      max_torque_nm: 80.0
+      max_velocity_rad_s: 3.0
+      gear_ratio: 60
+      encoder_resolution: 4096
+      position_offset_rad: 0.0
+      direction: -1
+      
+    wrist_pitch:
+      motor_type: "brushless_dc"
+      max_torque_nm: 40.0
+      max_velocity_rad_s: 3.5
+      gear_ratio: 40
+      encoder_resolution: 2048
+      position_offset_rad: 0.0
+      direction: 1
+      
+    wrist_roll:
+      motor_type: "brushless_dc"
+      max_torque_nm: 30.0
+      max_velocity_rad_s: 4.0
+      gear_ratio: 30
+      encoder_resolution: 2048
+      position_offset_rad: 0.0
+      direction: -1
+      
+    gripper:
+      motor_type: "servo"
+      max_force_n: 50.0
+      max_velocity_m_s: 0.1
+      gear_ratio: 10
+      encoder_resolution: 1024
+      position_offset_rad: 0.0
+      direction: 1
+
+  # Sensor specifications
+  sensors:
+    force_sensors:
+      - name: "wrist_force"
+        location: "wrist"
+        max_force_xyz: [100.0, 100.0, 200.0]
+        max_torque_xyz: [20.0, 20.0, 10.0]
+        calibration_matrix: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+        
+      - name: "elbow_force"
+        location: "elbow"
+        max_force_xyz: [80.0, 80.0, 150.0]
+        max_torque_xyz: [15.0, 15.0, 8.0]
+        calibration_matrix: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+    
+    imu_sensors:
+      - name: "upper_arm_imu"
+        location: "upper_arm"
+        accelerometer_range_g: 16
+        gyroscope_range_dps: 2000
+        magnetometer_enabled: true
+        sampling_rate_hz: 1000
+        
+    proximity_sensors:
+      - name: "shoulder_proximity"
+        location: "shoulder"
+        max_range_m: 0.5
+        field_of_view_deg: 60
+        
+# Communication settings
+communication:
+  primary_interface: "can"
+  can_settings:
+    interface: "can0"
+    bitrate: 1000000
+    node_id: 10
+    
+  backup_interface: "ethernet"
+  ethernet_settings:
+    ip_address: "192.168.1.10"
+    port: 8080
+    protocol: "tcp"
+
+# Safety parameters specific to this robot
+safety:
+  emergency_stops:
+    - name: "shoulder_estop"
+      type: "physical_button"
+      location: "shoulder_assembly"
+      
+    - name: "wrist_estop"  
+      type: "physical_button"
+      location: "wrist_assembly"
+      
+  software_limits:
+    position_limits:
+      shoulder_pitch: [-1.2, 1.4]  # Anatomically optimized
+      shoulder_roll: [-0.8, 1.6]
+      elbow: [-2.2, 0.1]
+      wrist_pitch: [-1.0, 1.0]
+      wrist_roll: [-1.5, 1.5]
+      gripper: [0.0, 0.8]
+      
+    velocity_limits:
+      shoulder_pitch: 1.8
+      shoulder_roll: 1.5
+      elbow: 2.2
+      wrist_pitch: 2.5
+      wrist_roll: 3.0
+      gripper: 1.0
+      
+    effort_limits:
+      shoulder_pitch: 90.0
+      shoulder_roll: 75.0
+      elbow: 60.0
+      wrist_pitch: 30.0
+      wrist_roll: 25.0
+      gripper: 40.0
+
+# Control parameters
+control:
+  pid_gains:
+    shoulder_pitch: {p: 800.0, i: 50.0, d: 20.0}
+    shoulder_roll: {p: 700.0, i: 40.0, d: 18.0}
+    elbow: {p: 500.0, i: 30.0, d: 15.0}
+    wrist_pitch: {p: 200.0, i: 15.0, d: 8.0}
+    wrist_roll: {p: 150.0, i: 10.0, d: 6.0}
+    gripper: {p: 100.0, i: 5.0, d: 2.0}
+    
+  feed_forward_gains:
+    shoulder_pitch: 0.1
+    shoulder_roll: 0.08
+    elbow: 0.06
+    wrist_pitch: 0.04
+    wrist_roll: 0.03
+    gripper: 0.02
+
+# Calibration procedures specific to this robot
+calibration:
+  joint_homing:
+    procedure: "encoder_index"
+    timeout_sec: 30
+    max_search_velocity: 0.5
+    
+  force_sensor_calibration:
+    procedure: "gravity_compensation"
+    num_poses: 8
+    timeout_sec: 120
+    
+  kinematic_calibration:
+    procedure: "least_squares"
+    num_measurements: 50
+    target_accuracy_mm: 2.0
+
+# Maintenance schedule
+maintenance:
+  daily_checks:
+    - "visual_inspection"
+    - "emergency_stop_test"
+    - "basic_movement_test"
+    
+  weekly_checks:
+    - "torque_sensor_calibration"
+    - "position_accuracy_test"
+    - "safety_limit_verification"
+    
+  monthly_checks:
+    - "full_calibration"
+    - "wear_inspection"
+    - "firmware_update_check"

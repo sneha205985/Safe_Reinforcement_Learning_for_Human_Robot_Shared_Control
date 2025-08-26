@@ -1,0 +1,232 @@
+# Wheelchair Version 2 - Robot-Specific Configuration
+# Hardware-specific parameters for CHAIR-V2 model
+
+robot_info:
+  model: "CHAIR-V2"
+  manufacturer: "MobilityTech Corp."
+  serial_number: "WC002-2025"
+  firmware_version: "3.2.1"
+  calibration_date: "2025-08-18"
+  last_maintenance: "2025-08-22"
+
+# Physical specifications
+physical_specs:
+  # Drive system specifications
+  drive_system:
+    left_wheel:
+      motor_type: "brushless_dc"
+      max_torque_nm: 50.0
+      max_velocity_rad_s: 8.0
+      wheel_diameter_m: 0.6
+      encoder_resolution: 2048
+      direction: 1
+      
+    right_wheel:
+      motor_type: "brushless_dc" 
+      max_torque_nm: 50.0
+      max_velocity_rad_s: 8.0
+      wheel_diameter_m: 0.6
+      encoder_resolution: 2048
+      direction: -1
+      
+  # Joystick and control interface
+  user_interface:
+    joystick:
+      type: "hall_effect"
+      max_deflection_mm: 25.0
+      dead_zone_mm: 2.0
+      resolution_bits: 12
+      
+    buttons:
+      - name: "power_button"
+        type: "momentary"
+        location: "right_armrest"
+        
+      - name: "mode_select"
+        type: "toggle"
+        location: "left_armrest"
+        
+      - name: "emergency_stop"
+        type: "mushroom"
+        location: "front_panel"
+
+  # Sensor specifications
+  sensors:
+    lidar:
+      model: "RPLIDAR-A2"
+      max_range_m: 12.0
+      angular_resolution_deg: 0.45
+      scan_rate_hz: 10.0
+      location: "front_bumper"
+      
+    imu_sensors:
+      - name: "base_imu"
+        location: "base_center"
+        accelerometer_range_g: 4
+        gyroscope_range_dps: 500
+        sampling_rate_hz: 100
+        
+    ultrasonic_sensors:
+      - name: "front_left"
+        location: "front_left_corner"
+        max_range_m: 3.0
+        beam_angle_deg: 15
+        
+      - name: "front_right"
+        location: "front_right_corner"
+        max_range_m: 3.0
+        beam_angle_deg: 15
+        
+      - name: "rear_center"
+        location: "rear_center"
+        max_range_m: 2.0
+        beam_angle_deg: 15
+
+# Communication settings
+communication:
+  primary_interface: "ros"
+  ros_settings:
+    namespace: "/wheelchair"
+    node_name: "wheelchair_controller"
+    
+  backup_interface: "serial"
+  serial_settings:
+    port: "/dev/ttyACM0"
+    baudrate: 115200
+    timeout_sec: 1.0
+
+# Safety parameters specific to this robot
+safety:
+  emergency_stops:
+    - name: "joystick_estop"
+      type: "software"
+      trigger: "joystick_timeout"
+      timeout_sec: 0.5
+      
+    - name: "physical_estop"
+      type: "physical_button" 
+      location: "front_panel"
+      
+  collision_avoidance:
+    enabled: true
+    min_obstacle_distance_m: 0.3
+    emergency_brake_distance_m: 0.1
+    max_deceleration_m_s2: 2.0
+    
+  software_limits:
+    max_linear_velocity_m_s: 2.0
+    max_angular_velocity_rad_s: 1.5
+    max_acceleration_m_s2: 1.0
+    max_angular_acceleration_rad_s2: 2.0
+    
+    # Terrain limitations
+    max_slope_deg: 15.0
+    max_cross_slope_deg: 10.0
+    min_ground_clearance_m: 0.05
+
+# Control parameters
+control:
+  differential_drive:
+    wheelbase_m: 0.55
+    max_wheel_velocity_m_s: 2.4
+    
+  velocity_control:
+    linear_pid: {p: 1.5, i: 0.3, d: 0.1}
+    angular_pid: {p: 2.0, i: 0.2, d: 0.15}
+    
+  trajectory_following:
+    lookahead_distance_m: 0.8
+    max_lateral_error_m: 0.2
+    goal_tolerance_m: 0.1
+    goal_tolerance_rad: 0.1
+
+# Navigation parameters
+navigation:
+  path_planning:
+    algorithm: "RRT*"
+    planning_timeout_sec: 5.0
+    replan_frequency_hz: 2.0
+    
+  obstacle_avoidance:
+    algorithm: "DWA"  # Dynamic Window Approach
+    prediction_time_sec: 3.0
+    simulation_granularity: 0.025
+    
+  localization:
+    method: "AMCL"  # Adaptive Monte Carlo Localization
+    min_particles: 100
+    max_particles: 2000
+
+# User adaptation parameters
+adaptation:
+  joystick_sensitivity:
+    default: 1.0
+    range: [0.1, 2.0]
+    adaptation_rate: 0.05
+    
+  preferred_velocity:
+    default: 1.0
+    range: [0.2, 2.0] 
+    adaptation_rate: 0.02
+    
+  turning_preference:
+    default: 1.0
+    range: [0.5, 2.0]
+    adaptation_rate: 0.03
+
+# Calibration procedures
+calibration:
+  wheel_odometry:
+    procedure: "straight_line_distance"
+    test_distance_m: 10.0
+    required_accuracy: 0.02  # 2%
+    
+  joystick_calibration:
+    procedure: "center_and_extremes"
+    num_samples: 100
+    timeout_sec: 60
+    
+  sensor_calibration:
+    imu_calibration:
+      procedure: "six_position"
+      duration_per_position_sec: 10
+      
+    lidar_calibration:
+      procedure: "wall_alignment"
+      required_accuracy_deg: 0.5
+
+# Maintenance schedule
+maintenance:
+  daily_checks:
+    - "battery_level_check"
+    - "tire_pressure_check" 
+    - "emergency_stop_test"
+    - "joystick_response_test"
+    
+  weekly_checks:
+    - "wheel_alignment_check"
+    - "sensor_cleaning"
+    - "software_update_check"
+    
+  monthly_checks:
+    - "full_calibration"
+    - "motor_performance_test"
+    - "safety_system_validation"
+    
+# Battery management
+battery:
+  type: "lithium_ion"
+  capacity_ah: 50.0
+  voltage_v: 24.0
+  max_discharge_rate: 2.0  # C-rate
+  
+  monitoring:
+    low_voltage_warning_v: 21.0
+    critical_voltage_v: 19.0
+    temperature_monitoring: true
+    max_temperature_c: 45.0
+    
+  charging:
+    max_charge_current_a: 10.0
+    charge_termination_voltage_v: 28.8
+    balancing_enabled: true

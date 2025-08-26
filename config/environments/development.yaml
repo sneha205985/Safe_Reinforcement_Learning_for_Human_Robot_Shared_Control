@@ -1,0 +1,257 @@
+# Development Environment Configuration
+# This configuration is optimized for local development and testing
+
+environment:
+  name: development
+  debug: true
+  log_level: DEBUG
+  testing_mode: true
+
+# Database Configuration
+database:
+  url: postgresql://saferl:dev_password@localhost:5432/saferl_dev
+  pool_size: 5
+  max_overflow: 10
+  echo: true  # SQL query logging
+  auto_create_tables: true
+  migrations_auto_run: true
+
+# Redis Configuration  
+redis:
+  url: redis://localhost:6379/0
+  max_connections: 10
+  decode_responses: true
+  socket_timeout: 5
+
+# Model Registry
+model_registry:
+  url: http://localhost:5000
+  timeout: 30
+  cache_dir: ./models
+  auto_register: true
+  versioning: true
+
+# API Configuration
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 1
+  reload: true  # Auto-reload on code changes
+  debug: true
+  cors_origins: 
+    - http://localhost:3000
+    - http://127.0.0.1:3000
+  rate_limiting:
+    enabled: false
+  authentication:
+    enabled: false
+    
+# Safety Configuration
+safety:
+  strict_mode: false  # Allow some violations for testing
+  max_violations_per_hour: 100
+  constraint_tolerance: 0.05
+  emergency_stop_enabled: true
+  validation_enabled: true
+  logging:
+    log_all_violations: true
+    log_constraint_checks: true
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  metrics_port: 9090
+  collection_interval: 10  # seconds
+  detailed_profiling: true
+  
+  prometheus:
+    enabled: true
+    port: 9090
+    
+  grafana:
+    enabled: true
+    url: http://localhost:3000
+    
+  alerting:
+    enabled: false  # Disabled in dev to avoid spam
+    channels: []
+
+# Algorithm Configuration
+algorithms:
+  # Default hyperparameters for development
+  sac_lagrangian:
+    lr_actor: 3e-4
+    lr_critic: 3e-4
+    lr_lagrange: 1e-3
+    hidden_dim: 256
+    constraint_threshold: 0.1
+    
+  td3_constrained:
+    lr_actor: 3e-4
+    lr_critic: 3e-4
+    hidden_dim: 256
+    constraint_threshold: 0.1
+    policy_delay: 2
+    
+  mpc_controller:
+    prediction_horizon: 10
+    control_horizon: 5
+    optimization_method: cvxpy
+    solver_timeout: 1.0
+
+# Environment Configuration
+environments:
+  default_max_episode_steps: 1000
+  render_mode: human
+  
+  manipulator_7dof:
+    physics_engine: pybullet
+    real_time: false
+    gui: true
+    
+  mobile_base:
+    map_size: [10, 10]
+    obstacles: random
+    sensor_noise: 0.01
+
+# Training Configuration
+training:
+  batch_size: 256
+  buffer_size: 100000
+  learning_starts: 1000
+  train_freq: 1
+  gradient_steps: 1
+  target_update_interval: 1
+  
+  # Checkpointing
+  save_freq: 1000
+  checkpoint_dir: ./checkpoints
+  keep_checkpoints: 5
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 100
+    min_delta: 0.001
+
+# Evaluation Configuration
+evaluation:
+  eval_freq: 1000
+  n_eval_episodes: 10
+  eval_env_kwargs:
+    render: false
+    
+# Logging Configuration
+logging:
+  version: 1
+  disable_existing_loggers: false
+  
+  formatters:
+    detailed:
+      format: '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+    simple:
+      format: '%(levelname)s - %(message)s'
+      
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+      formatter: detailed
+      stream: ext://sys.stdout
+      
+    file:
+      class: logging.handlers.RotatingFileHandler
+      level: DEBUG
+      formatter: detailed
+      filename: logs/development.log
+      maxBytes: 10485760  # 10MB
+      backupCount: 5
+      
+  loggers:
+    safe_rl_human_robot:
+      level: DEBUG
+      handlers: [console, file]
+      propagate: false
+      
+    sqlalchemy.engine:
+      level: INFO  # Reduce SQL query noise
+      handlers: [console]
+      
+  root:
+    level: INFO
+    handlers: [console, file]
+
+# Security Configuration (relaxed for development)
+security:
+  secret_key: dev_secret_key_change_in_production
+  cors_enabled: true
+  cors_allow_credentials: true
+  csrf_enabled: false
+  rate_limiting_enabled: false
+  
+# Performance Configuration
+performance:
+  # Reduced for development machines
+  max_workers: 2
+  worker_memory_limit: 2048  # MB
+  gpu_memory_fraction: 0.5
+  
+  caching:
+    enabled: true
+    ttl: 300  # 5 minutes
+    max_size: 1000
+    
+  batch_processing:
+    enabled: true
+    batch_size: 32
+    timeout: 5.0
+
+# Feature Flags
+features:
+  async_inference: true
+  model_caching: true
+  metrics_collection: true
+  safety_monitoring: true
+  human_feedback_collection: false  # Disabled in dev
+  advanced_profiling: true
+  
+# Development Tools
+dev_tools:
+  auto_reload: true
+  hot_reloading: true
+  debug_toolbar: true
+  profiling_enabled: true
+  
+  jupyter:
+    enabled: true
+    port: 8888
+    
+  tensorboard:
+    enabled: true
+    logdir: ./tensorboard_logs
+    port: 6006
+    
+# Data Management
+data:
+  storage_path: ./data
+  backup_enabled: false
+  compression_enabled: false
+  
+  datasets:
+    auto_download: true
+    cache_dir: ./datasets
+    validation_split: 0.2
+    
+# Testing Configuration
+testing:
+  unit_tests:
+    coverage_threshold: 80
+    parallel_execution: true
+    
+  integration_tests:
+    database_fixtures: true
+    mock_external_services: true
+    
+  performance_tests:
+    benchmark_threshold: 100  # ms
+    memory_threshold: 1024  # MB

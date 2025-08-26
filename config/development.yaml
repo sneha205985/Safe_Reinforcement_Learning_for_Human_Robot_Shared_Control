@@ -1,0 +1,127 @@
+# Safe RL Human-Robot Shared Control - Development Configuration
+# Optimized for development and debugging
+
+config_version: "1.0.0"
+environment: "development"
+created_at: "2025-08-26T10:00:00"
+updated_at: "2025-08-26T10:00:00"
+
+# Safety Configuration - More permissive for development
+safety:
+  emergency_stop_enabled: true
+  watchdog_timeout_sec: 5.0  # More forgiving timeout for debugging
+  safety_monitoring_rate_hz: 50.0  # Lower rate for development
+  force_limits_enabled: true
+  position_limits_enabled: true
+  velocity_limits_enabled: true
+  redundant_checking: false  # Disabled for faster development
+  fail_safe_mode: "safe_position"  # Less disruptive than emergency_stop
+  
+  # Generous force limits for testing
+  max_force_x: 75.0
+  max_force_y: 75.0
+  max_force_z: 150.0
+  max_torque_x: 30.0
+  max_torque_y: 30.0
+  max_torque_z: 15.0
+
+# Hardware Configuration - Development setup
+hardware:
+  robot_type: "simulation"  # Use simulation in dev
+  hardware_id: "dev_robot_001"
+  communication_protocol: "simulation"
+  control_frequency_hz: 50.0  # Lower frequency for stability
+  
+  num_joints: 6
+  joint_names:
+    - "shoulder_pitch"
+    - "shoulder_roll"
+    - "elbow"
+    - "wrist_pitch"
+    - "wrist_roll"
+    - "gripper"
+  
+  # Relaxed position limits for testing
+  position_limits_min: [-2.0, -2.0, -2.0, -2.0, -2.0, -1.0]
+  position_limits_max: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0]
+  velocity_limits: [3.0, 3.0, 3.0, 3.0, 3.0, 2.0]
+  effort_limits: [150.0, 150.0, 100.0, 75.0, 75.0, 50.0]
+  
+  ros_namespace: "/safe_rl_dev"
+  serial_port: "/dev/ttyUSB0"
+  serial_baudrate: 115200
+  can_interface: "can0"
+  ethernet_address: "127.0.0.1"  # Localhost for dev
+  ethernet_port: 8080
+
+# Algorithm Configuration - Fast training for development
+algorithm:
+  algorithm_type: "cpo"
+  policy_network_type: "mlp"
+  
+  # Smaller network for faster training
+  hidden_layers: [128, 128]
+  activation_function: "relu"
+  learning_rate: 0.001  # Higher learning rate for faster convergence
+  
+  # Reduced batch size for development
+  batch_size: 512
+  num_epochs: 5
+  gamma: 0.99
+  gae_lambda: 0.95
+  
+  # Relaxed safety constraints for testing
+  cost_limit: 50.0
+  constraint_violation_penalty: 50.0
+  safety_margin: 0.2
+  
+  cpo_damping_coeff: 0.1
+  cpo_max_kl: 0.01
+  
+  # Shorter episodes for faster iteration
+  max_episode_steps: 500
+  num_parallel_envs: 4
+  total_training_steps: 50000  # Much shorter for dev
+
+# User Preferences - Development defaults
+user_preferences:
+  user_id: "developer"
+  preferred_assistance_level: 0.3  # Lower assistance for testing
+  preferred_control_mode: "shared"
+  
+  feedback_type: "visual"  # Visual feedback easier for debugging
+  feedback_intensity: 0.8
+  
+  conservative_mode: false
+  custom_safety_limits: {}
+  
+  adaptation_enabled: false  # Disabled for consistent testing
+  learning_from_demonstrations: true
+  user_model_path: "models/dev_user_model.pkl"
+
+# Logging Configuration - Verbose for development
+logging:
+  log_level: "DEBUG"  # Detailed logging for development
+  log_to_file: true
+  log_to_console: true
+  log_file_path: "logs/safe_rl_dev.log"
+  max_log_file_size_mb: 50
+  backup_count: 3
+  
+  # Detailed monitoring for debugging
+  enable_performance_monitoring: true
+  metrics_collection_rate_hz: 5.0
+  
+  # Log everything for development analysis
+  log_sensor_data: true
+  log_control_commands: true
+  log_safety_events: true
+  log_user_interactions: true
+  
+  # Remote monitoring disabled for dev
+  enable_remote_monitoring: false
+  monitoring_server_url: ""
+  monitoring_api_key: ""
+
+# Environment-specific overrides
+environment_overrides: {}

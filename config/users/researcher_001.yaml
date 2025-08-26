@@ -1,0 +1,28 @@
+# User Preferences - Researcher 001
+# Configuration matching UserPreferences dataclass
+
+user_id: "researcher_001"
+preferred_assistance_level: 0.2  # Minimal assistance for research
+preferred_control_mode: "shared"  # Shared with manual override capability
+
+# Interface preferences for research
+feedback_type: "visual"  # Primary visual feedback for data collection
+feedback_intensity: 0.8
+
+# Safety preferences for research
+conservative_mode: false  # Allow experimental configurations
+custom_safety_limits:
+  position_limits_multiplier: 1.2  # Extended range for testing
+  velocity_limits_multiplier: 1.1
+  force_limits_multiplier: 0.8  # Reduced forces for safety
+
+# Adaptation settings
+adaptation_enabled: false  # Consistent behavior for experiments
+learning_from_demonstrations: true
+user_model_path: "models/researcher_001_model.pkl"
+
+# Additional metadata would be stored separately in practice
+# role: "research_scientist"
+# department: "robotics_lab"
+# clearance_level: "full_access"
+# research_focus: "safe_rl_algorithms"

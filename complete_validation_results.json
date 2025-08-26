@@ -1,0 +1,39 @@
+{
+  "suite_start_time": 1756184741.256064,
+  "suite_duration": 16.40914011001587,
+  "overall_score": 64.65,
+  "production_ready": false,
+  "architecture_score": 100.0,
+  "integration_score": 32.0,
+  "performance_score": 75.0,
+  "security_score": 45.0,
+  "stress_test_score": 75.0,
+  "backup_recovery_score": 60.0,
+  "total_validations": 6,
+  "passed_validations": 1,
+  "failed_validations": 5,
+  "critical_issues": [],
+  "security_vulnerabilities": [
+    "Found 8 potential secret exposures",
+    "Found 3 potentially dangerous code patterns"
+  ],
+  "performance_issues": [],
+  "reliability_concerns": [],
+  "immediate_actions": [
+    "CRITICAL: Address security vulnerabilities immediately"
+  ],
+  "production_recommendations": [
+    "System NOT ready for production (score: 64.7/100)",
+    "Address all critical issues and re-validate",
+    "Consider phased deployment approach",
+    "Implement additional testing in staging environment"
+  ],
+  "monitoring_requirements": [
+    "Real-time system health monitoring",
+    "Performance metrics collection and alerting",
+    "Security event monitoring and logging",
+    "Automated backup status verification",
+    "Resource utilization monitoring",
+    "Error rate and response time tracking"
+  ]
+}
