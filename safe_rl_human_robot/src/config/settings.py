@@ -11,6 +11,7 @@ from pathlib import Path
 import json
 import yaml
 import logging
+import os
 from enum import Enum
 
 
@@ -412,3 +413,68 @@ class SafeRLConfig:
             summary_lines.append(f"  - {constraint.constraint_type.value}: penalty={constraint.violation_penalty}")
         
         return "\n".join(summary_lines)
+
+
+@dataclass
+class DeploymentConfig:
+    """Deployment environment configuration class."""
+    
+    environment: str = "development"  # development, staging, production
+    log_level: str = "INFO"
+    max_workers: int = 4
+    timeout_seconds: int = 30
+    
+    # Hardware settings
+    enable_gpu: bool = False
+    enable_cuda: bool = False
+    device_id: int = 0
+    
+    # Monitoring settings
+    enable_monitoring: bool = True
+    metrics_port: int = 8080
+    health_check_interval: int = 30
+    
+    # Security settings
+    enable_ssl: bool = False
+    api_key_required: bool = False
+    rate_limit_per_minute: int = 100
+    
+    # Performance settings
+    cache_size_mb: int = 256
+    max_memory_usage_mb: int = 2048
+    gc_threshold: int = 1000
+    
+    # Database settings (if needed)
+    database_url: Optional[str] = None
+    connection_pool_size: int = 10
+    
+    @classmethod
+    def from_environment(cls):
+        """Create config from environment variables."""
+        return cls(
+            environment=os.getenv("DEPLOYMENT_ENV", "development"),
+            log_level=os.getenv("LOG_LEVEL", "INFO"),
+            enable_gpu=os.getenv("ENABLE_GPU", "false").lower() == "true",
+            enable_monitoring=os.getenv("ENABLE_MONITORING", "true").lower() == "true",
+            metrics_port=int(os.getenv("METRICS_PORT", "8080")),
+        )
+    
+    def validate(self) -> bool:
+        """Validate configuration settings."""
+        if self.environment not in ["development", "staging", "production"]:
+            return False
+        if self.max_workers < 1:
+            return False
+        if self.timeout_seconds < 1:
+            return False
+        return True
+    
+    def get_runtime_config(self) -> Dict[str, Any]:
+        """Get runtime configuration dictionary."""
+        return {
+            "environment": self.environment,
+            "workers": self.max_workers,
+            "timeout": self.timeout_seconds,
+            "gpu_enabled": self.enable_gpu,
+            "monitoring_enabled": self.enable_monitoring,
+        }

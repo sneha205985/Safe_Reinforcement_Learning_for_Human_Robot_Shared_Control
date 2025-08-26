@@ -5,6 +5,13 @@ This package implements Constrained Policy Optimization (CPO) methods for safe
 reinforcement learning in human-robot collaborative systems.
 """
 
+import sys
+from pathlib import Path
+
+# Add current directory to path for proper imports
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
+
 __version__ = "1.0.0"
 __author__ = "Safe RL Development Team"
 
@@ -43,8 +50,9 @@ except ImportError as e:
 
 # Safety system imports
 try:
-    from . import safety
+    from .core.safety_monitor import SafetyMonitor
     SAFETY_AVAILABLE = True
+    safety = {'SafetyMonitor': SafetyMonitor}
 except ImportError as e:
     print(f"Warning: Safety systems not available: {e}")
     SAFETY_AVAILABLE = False

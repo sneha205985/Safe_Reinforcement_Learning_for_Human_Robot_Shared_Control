@@ -40,6 +40,31 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class TimingRequirements:
+    """Real-time timing requirements specification."""
+    
+    max_execution_time_us: float = 1000.0
+    max_jitter_us: float = 50.0
+    min_frequency_hz: float = 1000.0
+    target_latency_us: float = 500.0
+    constraint_check_time_us: float = 100.0
+    memory_allocation_time_us: float = 10.0
+    
+    def __init__(self, max_execution_time_us: float = 1000.0, 
+                 max_jitter_us: float = 50.0, 
+                 min_frequency_hz: float = 1000.0,
+                 target_latency_us: float = 500.0,
+                 constraint_check_time_us: float = 100.0,
+                 memory_allocation_time_us: float = 10.0):
+        self.max_execution_time_us = max_execution_time_us
+        self.max_jitter_us = max_jitter_us
+        self.min_frequency_hz = min_frequency_hz
+        self.target_latency_us = target_latency_us
+        self.constraint_check_time_us = constraint_check_time_us
+        self.memory_allocation_time_us = memory_allocation_time_us
+
+
+@dataclass
 class RTOptimizationConfig:
     """Unified configuration for all RT optimization components"""
     
